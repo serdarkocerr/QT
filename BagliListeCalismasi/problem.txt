@@ -1,0 +1,1 @@
+Ödev 2. Bir otopark için boş ve dolu park alanı kontrolünü bağlı iste ile gerçekleyen ve gelen müşteriyi en yakın boş alana yönlendiren bir çalışma yapınız.
