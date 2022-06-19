@@ -1,0 +1,14 @@
+ Visit http://www.naturalearthdata.com
+click on the Get the Data link to jump to the Downloads page
+The basemap data can be found by clicking on the Raster link. We'll want the highest-resolution data available, so use the link in the Large scale data, 1:10m section.
+While you could use any of these datasets as a basemap, we will download the Natural Earth I with Shaded Relief, Water, and Drainages dataset. Make sure you download the high-resolution version of this dataset so that the raster image will still look good when the user has zoomed in.
+
+For the landmarks, we'll be using the "populated places" dataset. Go back to the main downloads page and click on the Cultural link in the Large scale data, 1:10m section. Scroll down to the Populated Places section and click on the Download Populated Places link.
+
+Once you have finished downloading, you should have two ZIP archives on your computer:
+
+NE1_HR_LC_SR_W_DR.zip
+
+ne_10m_populated_places.zip
+
+Create a folder named data, decompress the preceding two ZIP archives, and place the resulting directories into your data folder.
