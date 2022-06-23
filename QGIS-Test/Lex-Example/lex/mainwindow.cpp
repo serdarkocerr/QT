@@ -146,6 +146,7 @@ void MainWindow::loadMap()
 
 }
 
+// for QGIS before QGIS 3
 void MainWindow::arrangeLandMarks(QgsMapLayer *mapLayer,QgsRuleBasedRenderer *renderer,QgsSymbol *symbol)
 {
     QgsVectorLayer* layer = static_cast<QgsVectorLayer*>(mapLayer);
