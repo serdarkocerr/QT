@@ -12,6 +12,10 @@
 #include <qgssymbol.h>
 #include <iostream>
 #include <qgsrulebasedlabeling.h>
+#include <qtoolbar.h>
+#include <qaction.h>
+#include <qmessagebox.h>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,6 +23,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->centralwidget->setMinimumSize(800,400);
+    /** UI Design */
+    this->setWindowTitle("Landmark Explorer");
+    createAndConnectToolbar();
+
+
     mapCanvas = new QgsMapCanvas();
     mapCanvas->setCanvasColor(Qt::white);
 
@@ -28,6 +37,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     centralWidget()->setLayout(playout);
 //    loadMap();
+
+    panTool = new PanTool(mapCanvas);
+    panTool->setAction(actionPan);
+
+    exploreTool = new ExploreTool(mapCanvas);
+    exploreTool->setAction(actionExplore);
+
+    actionShowBaseMapLayer->setChecked(true);
+    actionShowLandmarkLayer->setChecked(true);
 
 }
 
@@ -43,11 +61,11 @@ void MainWindow::loadMap()
     //    QString currentDir = QDir::currentPath();
     //    QString filename = currentDir + QString("");
         QString currentDirtfw="D:/Qt5.12.12/workspace/Lex-Example/data/NE1_HR_LC_SR_W_DR.tif";
-        QgsRasterLayer *lRaster = new QgsRasterLayer(currentDirtfw,"basemap");
+        lRaster = new QgsRasterLayer(currentDirtfw,"basemap");
         QgsProject::instance()->addMapLayer(lRaster);
 
         QString currentDirShp ="D:/Qt5.12.12/workspace/Lex-Example/data/ne_10m_populated_places.shp";
-        QgsVectorLayer *lVector = new QgsVectorLayer(currentDirShp,"landmarks","ogr");
+        lVector = new QgsVectorLayer(currentDirShp,"landmarks","ogr");
         QgsProject::instance()->addMapLayer(lVector);
 
 //        /** labels are unreadable so that some label( landmark labels) will be shown due to zooms levels.*/
@@ -146,7 +164,6 @@ void MainWindow::loadMap()
 
 }
 
-// for QGIS before QGIS 3
 void MainWindow::arrangeLandMarks(QgsMapLayer *mapLayer,QgsRuleBasedRenderer *renderer,QgsSymbol *symbol)
 {
     QgsVectorLayer* layer = static_cast<QgsVectorLayer*>(mapLayer);
@@ -208,3 +225,220 @@ void MainWindow::arrangeLandMarks(QgsMapLayer *mapLayer,QgsRuleBasedRenderer *re
 
 }
 
+void MainWindow::createAndConnectToolbar()
+{
+    QMenu *fileMenu = this->menuBar()->addMenu("File");
+    QMenu *viewMenu = this->menuBar()->addMenu("View");
+    QMenu *modeMenu = this->menuBar()->addMenu("Mode");
+
+    QToolBar *toolbar  = new QToolBar(this);
+    this->addToolBar(Qt::TopToolBarArea, toolbar);
+
+
+    QAction *actionQuit = new QAction("Quit",this);
+    actionQuit->setShortcut(QKeySequence::Quit);
+
+    actionShowBaseMapLayer = new QAction("Basemap",this);
+    actionShowBaseMapLayer->setShortcut(QKeySequence("Ctrl+B"));
+    actionShowBaseMapLayer->setCheckable(true);
+
+    actionShowLandmarkLayer = new QAction("Landmarks",this);
+    actionShowLandmarkLayer->setShortcut(QKeySequence("Ctrl+L"));
+    actionShowLandmarkLayer->setCheckable(true);
+
+    QIcon iconZoomIn(":/icon/mActionZoomIn.png");
+    QAction *actionZoomIn = new QAction(iconZoomIn,"ZoomIn",this);
+    actionZoomIn->setShortcut(QKeySequence::ZoomIn);
+
+    QIcon iconZoomOut(":/icon/mActionZoomOut.png");
+    QAction *actionZoomOut = new QAction(iconZoomOut,"ZoomOut",this);
+    actionZoomOut->setShortcut(QKeySequence::ZoomOut);
+
+    QIcon iconPan(":/icon/mActionPan.png");
+    actionPan = new QAction(iconPan,"Pan",this);
+    actionPan->setShortcut(QKeySequence("Ctrl+1"));
+    actionPan->setCheckable(true);
+
+    QIcon iconExplore(":/icon/mActionExplore.png");
+    actionExplore = new QAction(iconExplore,"Explore",this);
+    actionExplore->setShortcut(QKeySequence("Ctrl+2"));
+    actionExplore->setCheckable(true);
+
+
+    fileMenu->addAction(actionQuit);
+
+    viewMenu->addAction(actionShowBaseMapLayer);
+    viewMenu->addAction(actionShowLandmarkLayer);
+    viewMenu->addSeparator();
+    viewMenu->addAction(actionZoomIn);
+    viewMenu->addAction(actionZoomOut);
+
+    modeMenu->addAction(actionPan);
+    modeMenu->addAction(actionExplore);
+
+    toolbar->addAction(actionZoomIn);
+    toolbar->addAction(actionZoomOut);
+    toolbar->addAction(actionPan);
+    toolbar->addAction(actionExplore);
+
+    this->resize(this->sizeHint());
+
+
+    connect(actionQuit,SIGNAL(triggered()),this,SLOT(quit()));
+    connect(actionShowBaseMapLayer,SIGNAL(triggered()),this,SLOT(showBaseMapLayerSLOT()));
+    connect(actionShowLandmarkLayer,SIGNAL(triggered()),this,SLOT(showLandMapLayerSLOT()));
+    connect(actionZoomIn,SIGNAL(triggered()),this,SLOT(zoomInSLOT()));
+    connect(actionZoomOut,SIGNAL(triggered()),this,SLOT(zoomOutSLOT()));
+    connect(actionPan,SIGNAL(triggered()),this,SLOT(setPanModeSLOT()));
+    connect(actionExplore,SIGNAL(triggered()),this,SLOT(setExploreModeSLOT()));
+}
+
+void MainWindow::setPanMode()
+{
+    actionPan->setChecked(true);
+    actionExplore->setChecked(false);
+
+    mapCanvas->setMapTool(panTool);
+}
+
+void MainWindow::setExploreMode()
+{
+    actionPan->setChecked(false);
+    actionExplore->setChecked(true);
+    mapCanvas->setMapTool(exploreTool);
+}
+
+void MainWindow::showBaseMapLayerSLOT()
+{
+     qDebug("showBaseMapLayerSLOT");
+
+     QList <QgsMapLayer *> layers;
+     if(actionShowLandmarkLayer->isChecked())
+         layers.append(lVector);
+     if(actionShowBaseMapLayer->isChecked())
+        layers.append(lRaster);
+
+
+     mapCanvas->setLayers(layers);
+     mapCanvas->setVisible(true);
+     mapCanvas->refresh();
+
+
+}
+
+void MainWindow::showLandMapLayerSLOT()
+{
+    qDebug("showLandMapLayerSLOT");
+
+    QList <QgsMapLayer *> layers;
+    if(actionShowLandmarkLayer->isChecked())
+        layers.append(lVector);
+    if(actionShowBaseMapLayer->isChecked())
+       layers.append(lRaster);
+
+
+    mapCanvas->setLayers(layers);
+    mapCanvas->setVisible(true);
+    mapCanvas->refresh();
+
+
+
+}
+
+void MainWindow::zoomInSLOT()
+{
+    qDebug("zoomInSLOT");
+    mapCanvas->zoomIn();
+
+}
+
+void MainWindow::zoomOutSLOT()
+{
+    qDebug("zoomOutSLOT");
+    mapCanvas->zoomOut();
+
+}
+
+void MainWindow::setPanModeSLOT()
+{
+    qDebug("setPanModeSLOT");
+    setPanMode();
+
+}
+
+void MainWindow::setExploreModeSLOT()
+{
+    qDebug("setExploreModeSLOT");
+    setExploreMode();
+}
+
+
+PanTool::PanTool(QgsMapCanvas *canvas) : QgsMapTool(canvas)
+{
+    this->setCursor(Qt::OpenHandCursor);
+
+}
+
+void PanTool::canvasMoveEvent(QgsMapMouseEvent *e)
+{
+    if(e->button() == Qt::LeftButton){
+        //dragging false  ?
+        this->canvas()->panAction(e);
+    }
+}
+
+void PanTool::canvasReleaseEvent(QgsMapMouseEvent *e)
+{
+    if(e->button() == Qt::LeftButton)
+        this->canvas()->panActionEnd(e->pos());
+
+}
+
+// display to feature when user clicked to landmark
+ExploreTool::ExploreTool(QgsMapCanvas *canvas) : QgsMapToolIdentify(canvas)
+{
+
+}
+
+void ExploreTool::canvasReleaseEvent(QgsMapMouseEvent *e)
+{
+    QList<QgsMapToolIdentify::IdentifyResult> found_features =
+            this->identify(e->x(), e->y() , TopDownStopAtFirst, VectorLayer);
+
+    QList<QString> info;
+
+    if(found_features.size() > 0){
+        QgsMapLayer *layer = found_features.at(0).mLayer;
+        QgsFeature feature = found_features.at(0).mFeature;
+        QgsGeometry geometry = feature.geometry();
+
+        QString name = feature.attribute("NAME").toString();
+        if(!feature.attribute("NAME").isNull())
+            info.append(name);
+
+        QString admin_0 = feature.attribute("ADM0NAME").toString();
+        QString admin_1 = feature.attribute("ADM1NAME").toString();
+
+        if(!admin_0.isEmpty() && !admin_1.isEmpty()){
+            info.append(admin_1 + ", " + admin_0);
+        }
+
+        QString timezone = feature.attribute("TIMEZONE").toString();
+
+        if(!feature.attribute("TIMEZONE").isNull())
+            info.append("Timezone : " + timezone);
+
+        double longitude = geometry.asPoint().x();
+        double latitude = geometry.asPoint().y();
+
+        info.append("Lat/Long " + QString::number(longitude,'f',4) +
+                    " , " + QString::number(latitude,'f',4));
+
+        QString infos;
+        for( QString str:info){
+            infos.append(str);
+        }
+        QMessageBox::information(canvas(),"Feature Info ", infos);
+
+    }
+}
