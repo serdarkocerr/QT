@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 //    w.loadMap();
     w.raise();
     w.loadMap();
+    w.setPanMode();
 
     int result = app.exec();
 
