@@ -15,4 +15,5 @@ set VSI_CACHE_SIZE=1000000
 set QT_PLUGIN_PATH=%OSGEO4W_ROOT%\apps\qgis-ltr-dev\qtplugins;%OSGEO4W_ROOT%\apps\qt5\plugins
 rem call %WORKSPACE_HOME%/OUTPUTS/qgisTestApp.exe
 rem call %WORKSPACE_HOME%/OUTPUTS/lex.exe
-call %WORKSPACE_HOME%/OUTPUTS/symbol-layers.exe
+rem call %WORKSPACE_HOME%/OUTPUTS/symbol-layers.exe
+call %WORKSPACE_HOME%/OUTPUTS/selectionExplorer.exe
