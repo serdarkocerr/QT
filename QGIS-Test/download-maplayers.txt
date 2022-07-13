@@ -12,3 +12,9 @@ NE1_HR_LC_SR_W_DR.zip
 ne_10m_populated_places.zip
 
 Create a folder named data, decompress the preceding two ZIP archives, and place the resulting directories into your data folder.
+
+
+------- QT and compiler ----
+Using Windows Desktop Qt 5.12.12
+
+MSVC2015 64 bit
