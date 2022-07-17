@@ -24,3 +24,4 @@ MSVC2015 64 bit
 lex ==> is project that consist of raster and vector map and show location infos.
 symbol-layers ==> is project that consists of raster and memory based vector map. Memory based vector map is created by programmer and programmer point some location on map.
 selectionExplorer ==> is project that consist of raster and memory based vector map. User can select features from vector map where  some locations that were created by programmer.
+geometryEditor ==> is project that lets  user drawing point,line and polygon also let them to delete and update existing features or geometries.
