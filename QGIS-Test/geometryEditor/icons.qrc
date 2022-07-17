@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>mActionAdd.svg</file>
+        <file>mActionDelete.svg</file>
+        <file>mActionEdit.png</file>
+        <file>mActionEditLine.svg</file>
+        <file>mActionEditPoint.svg</file>
+        <file>mActionEditPolygon.svg</file>
+        <file>mActionPan.png</file>
+        <file>mActionZoomIn.png</file>
+        <file>mActionZoomOut.png</file>
+    </qresource>
+</RCC>
