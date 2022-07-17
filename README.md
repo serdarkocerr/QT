@@ -9,3 +9,6 @@ Map uygulamaları için yazılmış open source bir tooldur. C++ apileri ile sta
 
 Memory-based layer ve compass
 ![alt text](https://github.com/serdarkocerr/QT/blob/master/QGIS-Test/symbol-layers/memory-layer-result.PNG)
+
+Geometry Editor : point, line ve polygon çizme,silme ve güncelleme işlemleri.
+![alt text](https://github.com/serdarkocerr/QT/blob/master/QGIS-Test/geometryEditor/geometryEditor.PNG)
