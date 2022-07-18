@@ -867,53 +867,6 @@ EditTool::EditTool(QgsMapCanvas *canvas, QgsVectorLayer *layer, ICallBack *callb
 
 }
 
-void EditTool::canvasMoveEvent(QgsMapMouseEvent *e)
-{
-    qDebug()<<"EditTool::canvasMoveEvent ";
-
-
-    if(dragging){
-        moveVertexTo(e->pos());
-        canvas->refresh();
-    }
-
-}
-
-void EditTool::canvasDoubleClickEvent(QgsMapMouseEvent *e)
-{
-    qDebug()<<"EditTool::canvasDoubleClickEvent -begin ";
-
-    QgsFeature feature = this->findFeatureAt(e->pos());
-    if(feature == NULL){
-        qDebug()<<"EditTool::canvasDoubleClickEvent -findFeature is NULL ";
-
-        return;
-    }
-     CapturedPoints point = transformCoordinates(e->pos());
-     QgsGeometry geometry = feature.geometry();
-
-
-    QgsPointXY closestPt;
-    int beforeVertexIndex ;
-
-     double distSquared =
-                 geometry.closestSegmentWithContext(point.toLayerCoordinatePoint,closestPt,beforeVertexIndex);
-
-     double distance = qSqrt(distSquared);
-     int tolerance = calculateTolerance(e->pos());
-
-     if(distance > tolerance){
-         qDebug()<<"EditTool::canvasDoubleClickEvent -distance > tolerance so that return ";
-
-         return;
-     }
-    geometry.insertVertex(closestPt.x(),closestPt.y(),beforeVertexIndex);
-    pLayer->changeGeometry(feature.id(),geometry);
-    canvas->refresh();
-    qDebug()<<"EditTool::canvasDoubleClickEvent -end ";
-
-}
-
 void EditTool::canvasPressEvent(QgsMapMouseEvent *e)
 {
     qDebug()<<"EditTool::canvasPressEvent -begin ";
@@ -939,46 +892,95 @@ void EditTool::canvasPressEvent(QgsMapMouseEvent *e)
                 geometry.closestVertex(point.toLayerCoordinatePoint,closestVertexIndex,previousVertexIndex,nextVertexIndex,sqrDist);
 
     double distance = qSqrt(sqrDist);
-    int tolerance = calculateTolerance(e->pos());
+    double tolerance = calculateTolerance(e->pos());
 
     if(distance > tolerance){
         qDebug()<<"EditTool::canvasPressEvent -distance > tolerance so that return ";
+        qDebug()<<"EditTool::canvasPressEvent -distance : " << distance << " tolerance: "<< tolerance;
 
         return;
     }
 
     if(e->button() == Qt::LeftButton){
 
-        dragging = true;
+        this->dragging = true;
         this->feature = feature;
         this->vertex = closestVertexIndex;
         this->moveVertexTo(e->pos());
         canvas->refresh();
 
     }else if (e->button() == Qt::RightButton){
-        this->deleteVertex(this->feature,vertex);
-        canvas->refresh();
+        this->deleteVertex(feature,closestVertexIndex);
+        this->canvas->refresh();
     }
 
     qDebug()<<"EditTool::canvasPressEvent -end ";
 
 }
 
+void EditTool::canvasMoveEvent(QgsMapMouseEvent *e)
+{
+    qDebug()<<"EditTool::canvasMoveEvent ";
+
+
+    if(dragging){
+        this->moveVertexTo(e->pos());
+        this->canvas->refresh();
+    }
+
+}
 void EditTool::canvasReleaseEvent(QgsMapMouseEvent *e)
 {
     qDebug()<<"EditTool::canvasReleaseEvent -begin ";
 
-    if (dragging){
+    if (this->dragging){
         moveVertexTo(e->pos());
         pLayer->updateExtents();
         canvas->refresh();
-        dragging = false;
-        feature  = NULL;
-        vertex   = -1000;
+        this->dragging = false;
+        this->feature  = NULL;
+        this->vertex   = -1000;
     }
     qDebug()<<"EditTool::canvasReleaseEvent -end ";
 
 }
+void EditTool::canvasDoubleClickEvent(QgsMapMouseEvent *e)
+{
+    qDebug()<<"EditTool::canvasDoubleClickEvent -begin ";
+
+    QgsFeature feature = this->findFeatureAt(e->pos());
+    if(feature == NULL){
+        qDebug()<<"EditTool::canvasDoubleClickEvent -findFeature is NULL ";
+
+        return;
+    }
+     CapturedPoints point = transformCoordinates(e->pos());
+     QgsGeometry geometry = feature.geometry();
+
+
+    QgsPointXY closestPt;
+    int beforeVertexIndex ;
+
+     double distSquared =
+                 geometry.closestSegmentWithContext(point.toLayerCoordinatePoint,closestPt,beforeVertexIndex);
+
+     double distance = qSqrt(distSquared);
+     double tolerance = calculateTolerance(e->pos());
+
+     if(distance > tolerance){
+         qDebug()<<"EditTool::canvasDoubleClickEvent -distance > tolerance so that return ";
+         qDebug()<<"EditTool::canvasDoubleClickEvent -distance : " << distance << " tolerance: "<< tolerance;
+
+         return;
+     }
+    geometry.insertVertex(closestPt.x(),closestPt.y(),beforeVertexIndex);
+    pLayer->changeGeometry(feature.id(),geometry);
+    canvas->refresh();
+    qDebug()<<"EditTool::canvasDoubleClickEvent -end ";
+
+}
+
+
 
 EditTool::CapturedPoints EditTool::transformCoordinates(QPoint canvasPoint)
 {
